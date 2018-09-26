@@ -1,3 +1,8 @@
+//**********//
+// Variables//
+//**********//
+
+// Array of possible phrases
 const phrases = [
   'A FRIENDLY PIECE OF ADVICE',
   'A LITTLE BIRD TOLD ME',
@@ -17,10 +22,13 @@ const overlay = document.querySelector('#overlay');
 const qwertySection = document.querySelector('#qwerty');
 const phraseSection = document.querySelector('#phrase');
 const scoreboardSection = document.querySelector('#scoreboard');
+const title = document.querySelector('.title');
 let gamePhrase = undefined;
 let missed = 0;
 
-
+//**********//
+// Functions//
+//**********//
 const getRandomPhraseAsArray = (arr) => {
   const index = Math.floor((Math.random() * 10) + 1);
   const phrase = Array.from(arr[index]);
@@ -66,30 +74,58 @@ const checkWin = () => {
   }
 };
 
-startGameButton.addEventListener('click', () => {
-  if (startGameButton.textContent === 'Play Again') {
-    window.location.reload();
-  } else {
-    overlay.style.display = 'none';
-    gamePhrase = getRandomPhraseAsArray(phrases);
-    addPhraseToDisplay(gamePhrase);
-  }
-});
+// Main game logic
+const game = (e) => {
 
-qwertySection.addEventListener('click', (e) => {
+  // If event target is the "start game" button:
+  if (e.target.className === 'btn__reset') {
+    if (startGameButton.textContent === 'Play Again') {
+      window.location.reload();
+    } else {
+      overlay.style.display = 'none';
+      gamePhrase = getRandomPhraseAsArray(phrases);
+      addPhraseToDisplay(gamePhrase);
+    }
+  }
+
+  // If event target is a button element:
   if (e.target.tagName === 'BUTTON') {
-    const letter = e.target.textContent;
-    checkLetter(letter);
-    e.target.className += 'chosen';
-    e.target.setAttribute('disabled', 'true');
+      const letter = e.target.textContent;
+      checkLetter(letter);
+      e.target.className += ' chosen';
+      e.target.setAttribute('disabled', 'true');
+  }
+
+  // If event is a keyup event:
+  if (e.type === 'keyup') {
+    const key = e.key;
+    checkLetter(key);
+    for (let i = 0; i < buttons.length; i += 1) {
+      if (buttons[i].textContent === key) {
+        buttons[i].className += ' chosen';
+        buttons[i].setAttribute('disabled', 'true');
+      }
+    }
+  }
+
+  // Disables checking for win conditions while overlay is showing:
+  if (overlay.style.display === 'none') {
     if (checkWin()) {
       overlay.style.display = '';
       overlay.className += ' win';
+      title.textContent = 'Winner!';
       startGameButton.textContent = 'Play Again';
     } else if (checkWin() === false) {
       overlay.style.display = '';
       overlay.className += ' lose';
+      title.textContent = 'Sorry, you lose.';
       startGameButton.textContent = 'Play Again';
     }
   }
-});
+}
+
+//****************//
+// Event Listeners//
+//****************//
+document.addEventListener('click', game);
+document.addEventListener('keyup', game);
